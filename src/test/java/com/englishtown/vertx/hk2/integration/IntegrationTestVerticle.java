@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
@@ -18,7 +19,9 @@ public class IntegrationTestVerticle extends TestVerticle {
     @Test
     public void testDependencyInjection() throws Exception {
 
-        container.deployVerticle(DependencyInjectionVerticle.class.getName(), new Handler<AsyncResult<String>>() {
+        JsonObject config = new JsonObject().putString("hk2_binder", "com.englishtown.vertx.hk2.MyBootstrapBinder");
+
+        container.deployVerticle(DependencyInjectionVerticle.class.getName(), config, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
                 assertTrue(result.succeeded());

@@ -33,14 +33,16 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.DeploymentVerticleFactory;
 import org.vertx.java.platform.Verticle;
+import org.vertx.java.platform.impl.Deployment;
 import org.vertx.java.platform.impl.java.CompilingClassLoader;
 import org.vertx.java.platform.impl.java.JavaVerticleFactory;
 
 /**
  * Extends the default vert.x {@link JavaVerticleFactory} using HK2 for dependency injection.
  */
-public class HK2VerticleFactory extends JavaVerticleFactory {
+public class HK2VerticleFactory extends JavaVerticleFactory implements DeploymentVerticleFactory {
 
     private Vertx vertx;
     private Container container;
@@ -68,6 +70,18 @@ public class HK2VerticleFactory extends JavaVerticleFactory {
      */
     @Override
     public Verticle createVerticle(String main) throws Exception {
+        return createVerticle(main, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Verticle createVerticle(Deployment deployment) throws Exception {
+        return createVerticle(deployment.main, deployment.config);
+    }
+
+    protected Verticle createVerticle(String main, JsonObject config) throws Exception {
         String className = main;
         Class<?> clazz;
 
@@ -80,15 +94,14 @@ public class HK2VerticleFactory extends JavaVerticleFactory {
         } else {
             clazz = cl.loadClass(className);
         }
-        Verticle verticle = createVerticle(clazz);
+        Verticle verticle = createVerticle(clazz, config);
         verticle.setVertx(vertx);
         verticle.setContainer(container);
         return verticle;
     }
 
-    private Verticle createVerticle(Class<?> clazz) throws Exception {
+    private Verticle createVerticle(Class<?> clazz, JsonObject config) throws Exception {
 
-        JsonObject config = this.container.config();
         if (config == null) {
             config = new JsonObject();
         }

@@ -25,14 +25,10 @@ package com.englishtown.vertx.hk2;
 
 import org.junit.Test;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultVertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
-import org.vertx.java.platform.PlatformManagerFactory;
-import org.vertx.java.platform.impl.DefaultContainer;
-import org.vertx.java.platform.impl.DefaultPlatformManagerFactory;
-import org.vertx.testtools.TestVerticle;
+import org.vertx.java.platform.impl.Deployment;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,17 +47,19 @@ public class HK2VerticleFactoryTest {
 
         HK2VerticleFactory factory = new HK2VerticleFactory();
 
-        JsonObject config = new JsonObject().putString("hk2_binder", "com.englishtown.vertx.hk2.BootstrapBinder");
+        JsonObject config = new JsonObject().putString("hk2_binder", "com.englishtown.vertx.hk2.MyBootstrapBinder");
 
         Logger logger = mock(Logger.class);
         Vertx vertx = mock(Vertx.class);
 
         Container container = mock(Container.class);
-        when(container.config()).thenReturn(config);
         when(container.logger()).thenReturn(logger);
 
+        Deployment deployment = new Deployment(null, "com.englishtown.vertx.hk2.TestHK2Verticle",
+                null, 1, config, null, null, null, null, false, false);
+
         factory.init(vertx, container, this.getClass().getClassLoader());
-        factory.createVerticle("com.englishtown.vertx.hk2.TestHK2Verticle");
+        factory.createVerticle(deployment);
 
     }
 
